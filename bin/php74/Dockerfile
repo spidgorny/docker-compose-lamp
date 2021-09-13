@@ -2,8 +2,30 @@ FROM php:7.4.2-apache-buster
 
 # Surpresses debconf complaints of trying to install apt packages interactively
 # https://github.com/moby/moby/issues/4032#issuecomment-192327844
- 
+
 ARG DEBIAN_FRONTEND=noninteractive
+
+ARG http_proxy
+ARG https_proxy
+ARG no_proxy
+
+ENV http_proxy ""
+ENV https_proxy ""
+ENV HTTP_PROXY ""
+ENV HTTPS_PROXY ""
+
+RUN export http_proxy=
+RUN export https_proxy=
+
+RUN unset http_proxy https_proxy no_proxy
+
+RUN echo export http_proxy= >> /root/.bashrc
+RUN echo export https_proxy= >> /root/.bashrc
+
+RUN echo variable 1 is ${http_proxy:-empty}
+RUN echo variable 1 is ${http_proxy-unset}
+
+ENTRYPOINT ["bash"]
 
 # Update
 RUN apt-get -y update --fix-missing && \
@@ -26,7 +48,7 @@ libicu-dev && \
 build-essential \
 git \
 curl \
-libonig-dev && \ 
+libonig-dev && \
     apt-get -y --no-install-recommends install --fix-missing libcurl4 \
 libcurl4-openssl-dev \
 zip \
@@ -65,7 +87,7 @@ RUN docker-php-ext-install pdo_mysql && \
     docker-php-ext-install exif
 
 
-# Install Freetype 
+# Install Freetype
 RUN apt-get -y update && \
     apt-get --no-install-recommends install -y libfreetype6-dev \
 libjpeg62-turbo-dev \
